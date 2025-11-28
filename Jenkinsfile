@@ -38,6 +38,16 @@ pipeline {
                 '''
             }
         }
+	stage('Deploy QA') {
+            steps {
+                echo 'Deploying to QA environment...'
+                sh '''
+                    docker stop maven-web-app-qa || true
+                    docker rm maven-web-app-qa || true
+                    docker run -d --name maven-web-app-qa -p 9091:8080 maven-web-app:latest
+                '''
+            }
+        }
     }
     
     post {
