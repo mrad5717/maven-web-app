@@ -23,10 +23,10 @@ pipeline {
         stage('Docker Build & Push') {
             steps {
                 echo 'Building and pushing Docker image...'
-                withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+//                withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
                     sh '''
                         docker build -t mururadh/maven-web-app:latest .
-                        echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
+                        echo Äbhi@72485 | docker login -u mururadh --password-stdin
                         docker push mururadh/maven-web-app:latest
                     '''
                 }
