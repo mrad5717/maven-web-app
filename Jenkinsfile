@@ -1,29 +1,54 @@
 pipeline {
     agent any
     
-    tools{
-        maven 'Maven-3.9.9'
+    tools {
+        maven 'Maven'
+        jdk 'JDK-11'
     }
+    
     stages {
-        stage('clone') {
+        stage('Checkout') {
             steps {
-              git 'https://github.com/ashokitschool/maven-web-app.git'
+                echo 'Getting source code from Git...'
+                git branch: '*/master', url: 'https://github.com/mrad5717/maven-web-app.git'
             }
         }
-        stage('build'){
-            steps{
-                 sh 'mvn clean package'
-            }
-        }
-        stage('docker image'){
+        
+        stage('Maven Build') {
             steps {
-                sh 'docker build -t ashokit/mavenwebapp .'
+                echo 'Building with Maven...'
+                sh 'mvn clean package'
             }
         }
-        stage('k8s deploy'){
-            steps{
-               sh 'kubectl apply -f k8s-deploy.yml'
+        
+        stage('Docker Build') {
+            steps {
+                echo 'Building Docker image...'
+                sh 'docker build -t maven-web-app:latest .'
             }
+        }
+        
+        stage('Deploy DEV') {
+            steps {
+                echo 'Deploying to DEV environment...'
+                sh '''
+                    docker stop maven-web-app-dev || true
+                    docker rm maven-web-app-dev || true
+                    docker run -d --name maven-web-app-dev -p 9090:8080 maven-web-app:latest
+                '''
+            }
+        }
+    }
+    
+    post {
+        always {
+            echo 'Pipeline completed!'
+        }
+        success {
+            echo 'Pipeline succeeded! DEV environment running on port 9090'
+        }
+        failure {
+            echo 'Pipeline failed! Check the logs.'
         }
     }
 }
