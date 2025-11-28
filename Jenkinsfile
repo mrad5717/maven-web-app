@@ -20,10 +20,16 @@ pipeline {
             }
         }
 
-        stage('Docker Build') {
+        stage('Docker Build & Push') {
             steps {
-                echo 'Building Docker image...'
-                sh 'docker build -t maven-web-app:latest .'
+                echo 'Building and pushing Docker image...'
+                withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                    sh '''
+                        docker build -t mururadh/maven-web-app:latest .
+                        echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
+                        docker push mururadh/maven-web-app:latest
+                    '''
+                }
             }
         }
 
@@ -31,8 +37,8 @@ pipeline {
             steps {
                 echo 'Deploying to Kubernetes DEV environment...'
                 sh '''
-                    kubectl create deployment maven-web-app-dev --image=maven-web-app:latest --dry-run=client -o yaml | kubectl apply -f -
-                    kubectl expose deployment maven-web-app-dev --port=8080 --target-port=8080 --type=NodePort --dry-run=client -o yaml | kubectl apply -f -
+                    kubectl apply -f deployment.yaml
+                    kubectl apply -f service.yaml
                     kubectl get pods
                     kubectl get services
                 '''
