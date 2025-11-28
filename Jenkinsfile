@@ -65,7 +65,7 @@ pipeline {
             kubectl get services
         '''
     }
-}
+
 }	
 
 
