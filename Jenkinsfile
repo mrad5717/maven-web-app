@@ -10,7 +10,7 @@ pipeline {
         stage('Checkout') {
             steps {
                 echo 'Getting source code from Git...'
-                git branch: '*/master', url: 'https://github.com/mrad5717/maven-web-app.git'
+               
             }
         }
         
