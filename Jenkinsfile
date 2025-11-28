@@ -37,6 +37,24 @@ pipeline {
                 sh '''
                     kubectl apply -f deployment.yaml
                     kubectl apply -f service.yaml
+                '''
+            }
+        }
+
+        stage('Deploy QA') {
+            steps {
+                echo 'Deploying to Kubernetes QA environment...'
+                sh '''
+                    kubectl apply -f deployment-qa.yaml
+                    kubectl apply -f service-qa.yaml
+                '''
+            }
+        }
+
+        stage('Verify Deployments') {
+            steps {
+                echo 'Checking deployment status...'
+                sh '''
                     kubectl get pods
                     kubectl get services
                 '''
@@ -49,7 +67,7 @@ pipeline {
             echo 'Pipeline completed!'
         }
         success {
-            echo 'Pipeline succeeded!'
+            echo 'Pipeline succeeded! DEV and QA environments deployed.'
         }
         failure {
             echo 'Pipeline failed! Check the logs.'
