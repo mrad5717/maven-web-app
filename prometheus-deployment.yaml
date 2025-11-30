@@ -1,0 +1,55 @@
+# Prometheus Monitoring Stack for Kubernetes
+# Purpose: Collect metrics from K8s cluster (CPU, memory, pods, services)
+# Access: http://node-ip:30900
+
+---
+# Prometheus Deployment - The main metrics collection server
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: prometheus
+  namespace: monitoring  # Separate namespace to organize monitoring components
+  labels:
+    app: prometheus
+spec:
+  replicas: 1  # Single instance for learning (production would use 2+ for HA)
+  selector:
+    matchLabels:
+      app: prometheus
+  template:
+    metadata:
+      labels:
+        app: prometheus
+    spec:
+      containers:
+      - name: prometheus
+        image: prom/prometheus:latest  # Official Prometheus Docker image
+        ports:
+        - containerPort: 9090  # Prometheus web UI and API port
+        resources:
+          requests:
+            memory: "512Mi"  # Minimum memory required
+            cpu: "250m"      # Minimum CPU required
+          limits:
+            memory: "1Gi"    # Maximum memory allowed
+            cpu: "500m"      # Maximum CPU allowed
+
+---
+# Prometheus Service - Exposes Prometheus to external access
+apiVersion: v1
+kind: Service
+metadata:
+  name: prometheus-service
+  namespace: monitoring
+  labels:
+    app: prometheus
+spec:
+  selector:
+    app: prometheus  # Routes traffic to pods with this label
+  ports:
+  - name: web
+    port: 9090        # Internal cluster port
+    targetPort: 9090  # Container port
+    nodePort: 30900   # External access port (http://node-ip:30900)
+  type: NodePort      # Allows external access via node IP
+
